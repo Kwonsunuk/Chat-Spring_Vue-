@@ -4,6 +4,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -35,5 +38,12 @@ public class SecurityConfig {
                 .httpBasic(withDefaults()); // 기본 HTTP 인증 방식 사용 가능 (테스트용)
 
         return http.build();
+    }
+    /**
+     * 비밀번호 암호화를 위한 BCryptPasswordEncoder 빈 등록
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

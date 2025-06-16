@@ -1,7 +1,0 @@
-POST http://localhost:8080/api/users
-Content-Type: application/json; charset=UTF-8
-
-{
-    "username": "woogi",
-    "password": "1234"
-}
