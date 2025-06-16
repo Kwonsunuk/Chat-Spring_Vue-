@@ -1,6 +1,7 @@
 package com.chatapp.chat_backend.controller;
 
 import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -8,9 +9,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.chatapp.chat_backend.dto.LoginRequestDTO;
 import com.chatapp.chat_backend.dto.UserRequestDTO;
 import com.chatapp.chat_backend.entity.User;
 import com.chatapp.chat_backend.repository.UserRepository;
+import com.chatapp.chat_backend.util.JwtUtil;
 
 import jakarta.validation.Valid;
 
@@ -36,17 +39,38 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
 
     private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
 
-    // 생성자 주입 방식
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    // 생성자를 통한 의존성 주입
+    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
+    
 
     // GET: 모든 사용자 조회
     @GetMapping
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+        // 로그인 요청
+    @PostMapping("/login")
+    public String login(@Valid @RequestBody LoginRequestDTO request) {
+        User user = userRepository.findByUsername(request.getUsername());
+
+        if (user == null) {
+            return "존재하지 않는 사용자입니다.";
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            return "비밀번호가 일치하지 않습니다.";
+        }
+
+        // JWT 발급
+        String token = jwtUtil.createToken(user.getUsername());
+        return "로그인 성공! JWT: " + token;
     }
 
     @PostMapping("/signup")

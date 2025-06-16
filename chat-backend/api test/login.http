@@ -1,0 +1,22 @@
+POST http://localhost:8080/api/users/login
+Content-Type: application/json
+
+{
+  "username": "woogi",
+  "password": "1234"
+}
+
+# HTTP/1.1 200 
+# X-Content-Type-Options: nosniff
+# X-XSS-Protection: 0
+# Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+# Pragma: no-cache
+# Expires: 0
+# X-Frame-Options: DENY
+# Content-Type: text/plain;charset=UTF-8
+# Content-Length: 154
+# Date: Mon, 16 Jun 2025 14:18:26 GMT
+# Connection: close
+
+# 로그인 성공! JWT: 
+# eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ3b29naSIsImlhdCI6MTc1MDA4MzUwNiwiZXhwIjoxNzUwMDg3MTA2fQ.BzqqFwogzHhwOB7D6UeVdQONccMxX7NK-T7TqS4NvAU
