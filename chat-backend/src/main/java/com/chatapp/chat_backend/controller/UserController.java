@@ -40,14 +40,12 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/users")
 public class UserController {
 
-    @Autowired
     private final PasswordEncoder passwordEncoder;
-    @Autowired
     private final UserRepository userRepository;
-    @Autowired
     private final JwtUtil jwtUtil;
 
     // 생성자를 통한 의존성 주입
+    @Autowired
     public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;

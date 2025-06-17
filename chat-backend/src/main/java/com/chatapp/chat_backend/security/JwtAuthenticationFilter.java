@@ -1,6 +1,5 @@
 package com.chatapp.chat_backend.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -32,12 +31,12 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    @Autowired
     private final JwtUtil jwtUtil;
 
     /**
      * JwtUtil을 주입받아 JWT 관련 로직(파싱, 검증, 사용자 추출 등)을 위임한다.
      */
+    @Autowired
     public JwtAuthenticationFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
