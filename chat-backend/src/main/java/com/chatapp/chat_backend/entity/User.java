@@ -11,8 +11,18 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * User 엔티티 클래스는 DB의 users 테이블과 매핑되는 클래스입니다.
- * 회원 정보를 저장하기 위한 도메인 객체로, JPA가 이 객체를 기반으로 자동으로 테이블을 생성/관리합니다.
+ * User 엔티티 클래스
+ * DB의 users 테이블과 자동으로 매핑되는 JPA 엔티티이다.
+ * 사용자 정보를 저장하며, Spring Security나 인증 처리에 사용될 수 있다.
+ * 
+ * - @Entity: JPA가 이 클래스를 테이블과 매핑하도록 지정
+ * - @Table(name = "users"): 테이블명을 "users"로 명시
+ * - @Id: 기본 키(PK) 지정
+ * - @GeneratedValue: ID 자동 증가 전략
+ * - @Column: 각 필드의 DB 컬럼 속성 설정
+ * Lombok:
+ * - @Getter, @Setter: 필드의 getter/setter 자동 생성
+ * - @NoArgsConstructor: 기본 생성자 생성
  */
 @Entity // JPA가 이 클래스가 엔티티임을 인식하게 해주는 애너테이션 (필수)
 @Table(name = "users") // DB에서 이 클래스가 매핑될 테이블명을 "users"로 지정
