@@ -3,6 +3,8 @@ package com.chatapp.chat_backend.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +19,8 @@ import com.chatapp.chat_backend.repository.UserRepository;
 import com.chatapp.chat_backend.util.AuthUtil;
 import com.chatapp.chat_backend.util.JwtUtil;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 /**
@@ -94,20 +98,28 @@ public class UserController {
      *         - JWT 발급
      */
     @PostMapping("/login")
-    public String login(@Valid @RequestBody LoginRequestDTO request) {
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequestDTO request, HttpServletResponse response) {
         User user = userRepository.findByUsername(request.getUsername());
 
         if (user == null) {
-            return "존재하지 않는 사용자입니다.";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("존재하지 않는 사용자입니다.");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return "비밀번호가 일치하지 않습니다.";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 일치하지 않습니다.");
         }
 
         // JWT 발급
         String token = jwtUtil.createToken(user.getUsername());
-        return "로그인 성공! JWT: " + token;
+
+        // HttpOnly 쿠키로 설정
+        Cookie cookie = new Cookie("token", token);
+        cookie.setHttpOnly(true); // JavaScript의 접근 금지
+        cookie.setPath("/"); // 모든 경로에 대해 쿠키 전송
+        cookie.setMaxAge(60 * 60); // 쿠키의 유효 시간 1시간으로 설정
+
+        response.addCookie(cookie); // 응답에 쿠키 추가
+        return ResponseEntity.ok("로그인 성공! 쿠키에 JWT 저장됨.");
     }
 
     /**

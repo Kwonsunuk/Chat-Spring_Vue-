@@ -12,6 +12,7 @@ import com.chatapp.chat_backend.util.JwtUtil;
 import io.jsonwebtoken.io.IOException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -96,10 +97,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * 형식: Authorization: Bearer {JWT}
      */
     private String parseToken(HttpServletRequest request) {
+        // Authorization 헤더 먼저 확인
         String authHeader = request.getHeader("Authorization");
-        // "Bearer "로 시작하는 경우에만 토큰을 ㅗ간주
+        // "Bearer "로 시작하는 경우에만 토큰을 간주
         if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7); // "Bearer " 다음부터 토큰 부분만 추출
+        }
+        // 쿠키에서 토큰 가져오기
+        if(request.getCookies() != null) {
+            for(Cookie cookie : request.getCookies()) {
+                if("token".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
         }
         return null; // 유효하지 않으면 null 반환
     }
