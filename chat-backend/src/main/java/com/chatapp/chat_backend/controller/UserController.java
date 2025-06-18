@@ -3,6 +3,8 @@ package com.chatapp.chat_backend.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,8 +16,11 @@ import com.chatapp.chat_backend.dto.LoginRequestDTO;
 import com.chatapp.chat_backend.dto.UserRequestDTO;
 import com.chatapp.chat_backend.entity.User;
 import com.chatapp.chat_backend.repository.UserRepository;
+import com.chatapp.chat_backend.util.AuthUtil;
 import com.chatapp.chat_backend.util.JwtUtil;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 /**
@@ -40,14 +45,12 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/users")
 public class UserController {
 
-    @Autowired
     private final PasswordEncoder passwordEncoder;
-    @Autowired
     private final UserRepository userRepository;
-    @Autowired
     private final JwtUtil jwtUtil;
 
     // 생성자를 통한 의존성 주입
+    @Autowired
     public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -95,20 +98,40 @@ public class UserController {
      *         - JWT 발급
      */
     @PostMapping("/login")
-    public String login(@Valid @RequestBody LoginRequestDTO request) {
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequestDTO request, HttpServletResponse response) {
         User user = userRepository.findByUsername(request.getUsername());
 
         if (user == null) {
-            return "존재하지 않는 사용자입니다.";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("존재하지 않는 사용자입니다.");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return "비밀번호가 일치하지 않습니다.";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 일치하지 않습니다.");
         }
 
         // JWT 발급
         String token = jwtUtil.createToken(user.getUsername());
-        return "로그인 성공! JWT: " + token;
+
+        // HttpOnly 쿠키로 설정
+        Cookie cookie = new Cookie("token", token);
+        cookie.setHttpOnly(true); // JavaScript의 접근 금지
+        cookie.setPath("/"); // 모든 경로에 대해 쿠키 전송
+        cookie.setMaxAge(60 * 60); // 쿠키의 유효 시간 1시간으로 설정
+
+        response.addCookie(cookie); // 응답에 쿠키 추가
+        return ResponseEntity.ok("로그인 성공! 쿠키에 JWT 저장됨.");
+    }
+
+    /**
+     * 현재 로그인한 사용자의 정보를 반환하는 테스트용 마이페이지 API
+     */
+    @GetMapping("/me")
+    public String getMyProfile() {
+        String username = AuthUtil.getCurrentUsername();
+        if (username == null) {
+            return "인증되지 않은 사용자입니다.";
+        }
+        return "현재 로그인한 사용자: " + username;
     }
 }
 
@@ -148,13 +171,15 @@ public class UserController {
 
 /**
  * @Valid
- * - 클라이언트의 JSON 요청이 DTO 객체로 매핑된 후, 해당 필드 값들이 유효한지를 검사한다.
- * - 예: DTO 클래스의 필드에 @NotBlank가 붙어 있다면, @Valid는 null 또는 공백("") 여부를 자동으로 검사하여 유효하지 않으면 예외를 발생시킨다.
+ *        - 클라이언트의 JSON 요청이 DTO 객체로 매핑된 후, 해당 필드 값들이 유효한지를 검사한다.
+ *        - 예: DTO 클래스의 필드에 @NotBlank가 붙어 있다면, @Valid는 null 또는 공백("") 여부를 자동으로
+ *        검사하여 유효하지 않으면 예외를 발생시킨다.
  *
  * @RequestBody
- * - 클라이언트가 보낸 JSON 데이터를 Java 객체(DTO)로 자동 변환해준다.
- * - 이 과정은 Spring의 HttpMessageConverter가 처리하며, 내부적으로 Jackson(ObjectMapper)을 사용하여 JSON → 객체 매핑이 수행된다.
+ *              - 클라이언트가 보낸 JSON 데이터를 Java 객체(DTO)로 자동 변환해준다.
+ *              - 이 과정은 Spring의 HttpMessageConverter가 처리하며, 내부적으로
+ *              Jackson(ObjectMapper)을 사용하여 JSON → 객체 매핑이 수행된다.
  * 
- * 정리하면, 클라이언트 → JSON → @RequestBody → DTO 객체로 변환되고,
- * 그 변환된 객체 → @Valid → 유효성 검사(@NotBlank 등)까지 자동으로 수행된다.
+ *              정리하면, 클라이언트 → JSON → @RequestBody → DTO 객체로 변환되고,
+ *              그 변환된 객체 → @Valid → 유효성 검사(@NotBlank 등)까지 자동으로 수행된다.
  */
