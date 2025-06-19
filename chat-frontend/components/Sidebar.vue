@@ -18,6 +18,7 @@
         </div>
         <button class="btn btn-primary w-100" type="submit">로그인</button>
       </form>
+      <button class="btn btn-secondary w-100" @click="navigateTo('/signup')">회원가입</button>
     </div>
   </div>
 </template>
@@ -26,6 +27,7 @@
 import { ref } from 'vue';
 
 import { useUserStore } from '@/stores/user';
+import { navigateTo } from '#app';
 
 const userStore = useUserStore();
 // 로그인 입력값 바인딩용 변수
