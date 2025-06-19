@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 
 import { useUserStore } from '@/stores/user';
 
@@ -31,18 +31,6 @@ const userStore = useUserStore();
 // 로그인 입력값 바인딩용 변수
 const username = ref('');
 const password = ref('');
-
-// 페이지 로드 시 서버에 현재 로그인된 사용자 정보 요청
-onMounted(async () => {
-  const { data } = await useFetch('http://localhost:8080/api/users/me', {
-    credentials: 'include', // 쿠키 전송 포함
-  });
-  // 응답 데이터에 '현재 로그인한 사용자'라는 문자열이 포함되면 스토어에 로그인 처리
-  if (data.value?.includes('현재 로그인한 사용자')) {
-    const name = data.value.split(': ')[1];
-    userStore.login(name);
-  }
-});
 
 // 로그인 요청 함수
 const handleLogin = async () => {
@@ -60,7 +48,12 @@ const handleLogin = async () => {
   }
 };
 
-const handleLogout = () => {
+const handleLogout = async () => {
+  await $fetch('http://localhost:8080/api/users/logout', {
+    method: 'POST',
+    credentials: 'include', // 쿠키 포함
+  });
+  userStore.logout();
   // jwt 쿠키 제거
   document.cookie = 'token=; Max-Age=0; path=/';
   // 스로어에 사용자 상태 초기화
