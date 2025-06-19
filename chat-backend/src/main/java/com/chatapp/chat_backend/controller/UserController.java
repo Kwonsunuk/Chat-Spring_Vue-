@@ -123,6 +123,22 @@ public class UserController {
     }
 
     /**
+     * 로그아웃 API
+     * 클라이언트의 JWT 쿠키를 삭제
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletResponse response) {
+        // 클라이언트의 로그아웃 요청 시 서버의 JWT 쿠키 삭제
+        Cookie cookie = new Cookie("token", null); 
+        cookie.setMaxAge(0); // 즉시 만료
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+
+        response.addCookie(cookie);
+        return ResponseEntity.ok("로그아웃 성공. 쿠키 삭제됨");
+    }
+
+    /**
      * 현재 로그인한 사용자의 정보를 반환하는 테스트용 마이페이지 API
      */
     @GetMapping("/me")
