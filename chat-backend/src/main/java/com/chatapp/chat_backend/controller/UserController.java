@@ -129,7 +129,7 @@ public class UserController {
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletResponse response) {
         // 클라이언트의 로그아웃 요청 시 서버의 JWT 쿠키 삭제
-        Cookie cookie = new Cookie("token", null); 
+        Cookie cookie = new Cookie("token", null);
         cookie.setMaxAge(0); // 즉시 만료
         cookie.setHttpOnly(true);
         cookie.setPath("/");
@@ -147,6 +147,11 @@ public class UserController {
         if (username == null) {
             return "인증되지 않은 사용자입니다.";
         }
+        // anonymousUser 반환 방지
+        if (username == null || username.equals("anonymousUser")) {
+            return "인증되지 않은 사용자입니다.";
+        }
+
         return "현재 로그인한 사용자: " + username;
     }
 }
