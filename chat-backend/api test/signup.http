@@ -2,7 +2,7 @@ POST http://localhost:8080/api/users/signup
 Content-Type: application/json; charset=UTF-8
 
 {
-    "username": "woogi",
+    "username": "woogi2",
     "password": "1234"
 }
 
