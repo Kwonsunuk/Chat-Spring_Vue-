@@ -72,10 +72,10 @@ public class UserController {
      *         - @Valid: DTO에 선언된 유효성 검사(@NotBlank 등)를 자동으로 적용
      */
     @PostMapping("/signup")
-    public String signup(@Valid @RequestBody UserRequestDTO requestDTO) {
+    public ResponseEntity<String> signup(@Valid @RequestBody UserRequestDTO requestDTO) {
         // 아이디 중복 체크!
         if (userRepository.findByUsername(requestDTO.getUsername()) != null) {
-            return "이미 존재하는 아이디입니다.";
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 존재하는 아이디입니다.");
         }
 
         // 비밀번호 암호화 후 DB에 저장
@@ -84,7 +84,7 @@ public class UserController {
         user.setPassword(passwordEncoder.encode(requestDTO.getPassword()));
 
         userRepository.save(user);
-        return "회원가입 성공.";
+        return ResponseEntity.ok("회원가입 성공.");
     }
 
     /**
